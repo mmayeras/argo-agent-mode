@@ -1,0 +1,39 @@
+# Hub (sno1): FULL Argo CD + argocd-agent principal in one ArgoCD CR.
+# The application-controller stays enabled, because in hybrid mode the hub keeps
+# managing the "legacy" apps via push.
+# The operator also points argocd-server / repo-server to the principal redis-proxy
+# (needed to see the resource tree of agent apps in the UI).
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: argocd
+  namespace: argocd
+spec:
+  server:
+    route:
+      enabled: true
+  argoCDAgent:
+    principal:
+      enabled: true
+      auth: "mtls:CN=([^,]+)"
+      logLevel: info
+      # route by spec.destination.name (needed for hybrid)
+      destinationBasedMapping: true
+      namespace:
+        # hub namespaces where the principal watches Applications
+        allowedNamespaces:
+          - argocd
+      server:
+        # passthrough Route argocd-agent-principal-argocd.<apps domain>:443, reached by the agents
+        route:
+          enabled: true
+      # certificates and JWT key are issued by argocd-agentctl (scripts/02-hub.sh)
+      tls:
+        insecureGenerate: false
+      jwt:
+        insecureGenerate: false
+      env:
+        # ISOLATION 2: the principal ONLY sees labeled resources
+        # (env var instead of spec.labelSelector, which needs operator >= 0.20 / GitOps 1.22)
+        - name: ARGOCD_PRINCIPAL_LABEL_SELECTOR
+          value: "argocd-agent=true"

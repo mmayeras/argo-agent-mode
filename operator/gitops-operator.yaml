@@ -1,0 +1,37 @@
+# OpenShift GitOps operator, installed the same way on the hub and on every spoke.
+# __CHANNEL__ is replaced by scripts/01-operator.sh (GITOPS_CHANNEL, default "latest").
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshift-gitops-operator
+  labels:
+    openshift.io/cluster-monitoring: "true"
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: openshift-gitops-operator
+  namespace: openshift-gitops-operator
+spec:
+  upgradeStrategy: Default
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: openshift-gitops-operator
+  namespace: openshift-gitops-operator
+spec:
+  channel: __CHANNEL__
+  installPlanApproval: Automatic
+  name: openshift-gitops-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+  config:
+    env:
+      # No default "openshift-gitops" instance: the lab only uses the "argocd" instance
+      - name: DISABLE_DEFAULT_ARGOCD_INSTANCE
+        value: "true"
+      # "argocd" instance is cluster-scoped: required by the principal (hub)
+      # and by the spoke controller, which creates the guestbook-* namespaces
+      - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
+        value: argocd

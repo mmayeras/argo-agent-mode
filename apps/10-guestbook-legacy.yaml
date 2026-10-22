@@ -1,0 +1,23 @@
+# "Legacy" app: classic PUSH. Rendered once per spoke (__SPOKE__) by scripts/05-apps.sh.
+# - no argocd-agent label           -> invisible to the principal
+# - destination __SPOKE__-direct    -> secret WITHOUT skip-reconcile -> managed by the hub controller
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook-legacy-__SPOKE__
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps
+    targetRevision: HEAD
+    path: guestbook
+  destination:
+    name: __SPOKE__-direct
+    namespace: guestbook-legacy
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

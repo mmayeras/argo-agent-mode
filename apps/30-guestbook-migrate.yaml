@@ -1,0 +1,22 @@
+# App that starts as PUSH and will be migrated to the agent (scripts/demo-migrate.sh).
+# Rendered once per spoke (__SPOKE__) by scripts/05-apps.sh.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook-migrate-__SPOKE__
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps
+    targetRevision: HEAD
+    path: guestbook
+  destination:
+    name: __SPOKE__-direct
+    namespace: guestbook-migrate
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
