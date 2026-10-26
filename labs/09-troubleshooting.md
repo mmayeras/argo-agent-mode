@@ -86,6 +86,34 @@ Missing label: `oc --context $SPOKE label ns argodemo-agent argocd.argoproj.io/m
 An Application deleted without `resources-finalizer.argocd.argoproj.io` leaves its workloads (orphaned). The
 child apps carry it; for leftovers from an older run, delete the namespace by hand.
 
+## App stuck deleting: "N objects remaining for deletion"
+
+The app finalizer waits for its objects, and the objects show `foregroundDeletion` in their finalizers:
+
+```bash
+oc --context $SPOKE -n <namespace> get deploy,svc,route \
+  -o custom-columns='NAME:.metadata.name,DEL:.metadata.deletionTimestamp,FIN:.metadata.finalizers'
+```
+
+`foregroundDeletion` is removed by the cluster garbage collector, not by Argo CD. If it stays, the garbage
+collector is blocked. On an overloaded SNO (CPU or memory near 100%), an APIService such as OLM `packageserver`
+flaps and the garbage collector cannot rebuild its graph:
+
+```bash
+oc --context $SPOKE adm top node
+oc --context $SPOKE get co operator-lifecycle-manager-packageserver
+P=$(oc --context $SPOKE -n openshift-kube-controller-manager get pods -l app=kube-controller-manager -o name | head -1)
+oc --context $SPOKE -n openshift-kube-controller-manager logs $P -c kube-controller-manager | grep 'GC sync'
+# "timed out waiting for dependency graph builder sync during GC sync"
+```
+
+Free resources on the node. To finish the deletion now, for objects already marked deleted:
+
+```bash
+oc --context $SPOKE -n <namespace> patch deployment/<name> --type merge -p '{"metadata":{"finalizers":null}}'
+oc --context $SPOKE -n <namespace> delete replicaset,pod --all
+```
+
 ## Push app `Unknown` / `ComparisonError`
 
 - Hub -> spoke API on 6443 blocked ([module 00](00-prereqs.md) step 5).
