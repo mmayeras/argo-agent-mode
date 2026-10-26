@@ -1,0 +1,19 @@
+# "Carrier" AppProject for credential templates (labs/10-bonus-repo-creds.md).
+# argocd-agent sends a repo-creds secret to the agents matching the destinations of the project named in its
+# "project" field. This project only does that routing: no sourceRepos, so no Application can use it.
+# Labeled: the principal only sees labeled AppProjects (labelSelector argocd-agent=true).
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: repo-creds
+  namespace: argocd
+  labels:
+    argocd-agent: "true"
+spec:
+  description: Routes repository credential templates to the agents. Not usable by Applications.
+  sourceRepos: []
+  destinations:
+    - name: sno2-agent
+      namespace: "*"
+    - name: sno3-agent
+      namespace: "*"
