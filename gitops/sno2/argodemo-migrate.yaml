@@ -3,7 +3,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: bgd-migrate-sno2
+  name: argodemo-migrate-sno2
   namespace: argocd
   # deleting the app (or pruning it from the root app) also deletes its workloads
   finalizers:
@@ -11,13 +11,14 @@ metadata:
 spec:
   project: default
   source:
-    # bgd sample from this repo (workloads/bgd). Fork: change repoURL like GIT_REPO in env.sh.
+    # argodemo from this repo (workloads/argodemo). Overlay = page color: blue (steelblue) or green (seagreen).
+    # Fork: change repoURL like GIT_REPO in env.sh.
     repoURL: https://github.com/mmayeras/argo-agent-mode.git
     targetRevision: main
-    path: workloads/bgd
+    path: workloads/argodemo/overlays/blue
   destination:
     name: sno2-direct
-    namespace: bgd-migrate
+    namespace: argodemo-migrate
   syncPolicy:
     automated:
       prune: true

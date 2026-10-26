@@ -27,7 +27,7 @@ oc --context $HUB delete namespace argocd
 ```bash
 for s in sno2 sno3; do
   oc --context $s -n argocd delete argocd argocd
-  oc --context $s delete namespace bgd-legacy bgd-agent bgd-migrate --ignore-not-found
+  oc --context $s delete namespace argodemo-legacy argodemo-agent argodemo-migrate --ignore-not-found
   oc --context $s delete -f manifests/spoke/argocd-manager.yaml
   oc --context $s delete namespace argocd
 done
@@ -53,5 +53,5 @@ for c in sno1 sno2 sno3; do oc --context $c get crd -o name | grep argoproj.io; 
 ## Checkpoint
 
 - [ ] No `argocd` namespace on sno1, sno2, sno3
-- [ ] No `bgd-*` namespaces on the spokes
+- [ ] No `argodemo-*` namespaces on the spokes
 - [ ] No `argocd-manager` in `kube-system` on the spokes

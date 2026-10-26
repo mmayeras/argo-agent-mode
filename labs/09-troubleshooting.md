@@ -72,14 +72,14 @@ workloads, even for a cluster-scoped instance ([module 01](01-operator.md)). The
 `argocd.argoproj.io/managed-by: argocd` (set by `managedNamespaceMetadata` in the agent apps):
 
 ```bash
-oc --context $SPOKE get ns bgd-agent --show-labels
-oc --context $SPOKE -n bgd-agent get role argocd-argocd-application-controller
-oc --context $SPOKE auth can-i create deployments -n bgd-agent \
+oc --context $SPOKE get ns argodemo-agent --show-labels
+oc --context $SPOKE -n argodemo-agent get role argocd-argocd-application-controller
+oc --context $SPOKE auth can-i create deployments -n argodemo-agent \
   --as system:serviceaccount:argocd:argocd-argocd-application-controller
 # yes
 ```
 
-Missing label: `oc --context $SPOKE label ns bgd-agent argocd.argoproj.io/managed-by=argocd`. The app retries.
+Missing label: `oc --context $SPOKE label ns argodemo-agent argocd.argoproj.io/managed-by=argocd`. The app retries.
 
 ## Workloads left behind after an app was removed
 
@@ -92,7 +92,7 @@ child apps carry it; for leftovers from an older run, delete the namespace by ha
 - Token secret deleted in `kube-system`, or certificate error: recreate `cluster-<spoke>-direct`
   ([module 04](04-spoke-push.md)), with `"insecure": true` if the API has a custom certificate.
 
-## Hub controller logs show `bgd-agent-*`
+## Hub controller logs show `argodemo-agent-*`
 
 `skip-reconcile` missing on `cluster-<spoke>-agent`, or Argo CD < 3.4:
 

@@ -84,9 +84,25 @@ oc --context $HUB run net-probe -n default --rm -i --restart=Never \
 
 Run both again with `SPOKE=sno3`.
 
+## 6. The argodemo image
+
+Every app deploys `quay.io/rh_ee_mmayeras/argodemo:1.0.0` ([`app/`](../app/README.md)). It must be public and pullable
+from the spokes:
+
+```bash
+curl -s https://quay.io/api/v1/repository/rh_ee_mmayeras/argodemo | grep -o '"is_public": *[a-z]*'
+# "is_public": true      (401 / "Requires authentication" = private repo: make it public in quay.io)
+```
+
+A `podman pull` from your laptop is not a valid check: it uses your own quay.io login, the clusters have none.
+
+Your own build: follow [`app/README.md`](../app/README.md) and change the image in
+`workloads/argodemo/base/kustomization.yaml`.
+
 ## Checkpoint
 
 - [ ] `oc`, `argocd-agentctl` v0.10.x, `envsubst` installed
 - [ ] `sno1`, `sno2`, `sno3` reachable, cluster-admin
 - [ ] No GitOps operator on any of them
 - [ ] sno2 and sno3 reach the hub routes on 443, the hub reaches both spoke APIs on 6443
+- [ ] `quay.io/rh_ee_mmayeras/argodemo:1.0.0` pullable

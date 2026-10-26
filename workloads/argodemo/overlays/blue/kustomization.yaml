@@ -1,0 +1,10 @@
+# blue: COLOR=steelblue. Point an Application at another overlay to change the page color.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+configMapGenerator:
+  - name: argodemo
+    behavior: merge
+    literals:
+      - COLOR=steelblue

@@ -25,12 +25,12 @@ The apps are deployed with the **app of apps** pattern: one root Application on 
 │                                              │            │                                            │
 │ application-controller (hub)                 │    push    │                                            │
 │   ├─► secret <spoke>-direct (no skip) ────────────────────► API :6443                                  │
-│   │                                          │   :6443    │   └─► ns bgd-legacy                  │
-│   └─✗ secret <spoke>-agent (skip-reconcile)  │            │       ns bgd-migrate                 │
+│   │                                          │   :6443    │   └─► ns argodemo-legacy                  │
+│   └─✗ secret <spoke>-agent (skip-reconcile)  │            │       ns argodemo-migrate                 │
 │                                              │            │                                            │
 │ argocd-agent-principal ◄───────────────────────────────────── argocd-agent-agent (managed)             │
 │   Route :443 passthrough                     │    pull    │     └─► local application-controller       │
-│   label-selector argocd-agent=true           │ gRPC mTLS  │           └─► ns bgd-agent           │
+│   label-selector argocd-agent=true           │ gRPC mTLS  │           └─► ns argodemo-agent           │
 │                                              │agent dials │                                            │
 └──────────────────────────────────────────────┘            └────────────────────────────────────────────┘
 ```
@@ -45,9 +45,9 @@ Per spoke (`<spoke>` = `sno2`, `sno3`):
 | Application (on the hub) | `argocd-agent` label | Destination | Managed by |
 |---|---|---|---|
 | `root` (app of apps, creates the others from [`gitops/`](gitops/)) | – | in-cluster (hub) | hub (push) |
-| `bgd-legacy-<spoke>` | – | `<spoke>-direct` | hub (push) |
-| `bgd-agent-<spoke>` | `true` | `<spoke>-agent` | agent (pull) |
-| `bgd-migrate-<spoke>` | – then `true` | `<spoke>-direct` then `<spoke>-agent` | push, then migrated by a Git change |
+| `argodemo-legacy-<spoke>` | – | `<spoke>-direct` | hub (push) |
+| `argodemo-agent-<spoke>` | `true` | `<spoke>-agent` | agent (pull) |
+| `argodemo-migrate-<spoke>` | – then `true` | `<spoke>-direct` then `<spoke>-agent` | push, then migrated by a Git change |
 
 ## The 3 safeguards (all in this lab)
 
@@ -97,7 +97,7 @@ cp env.example.sh env.sh && source ./env.sh     # HUB=sno1, SPOKE=sno2
 
 - OpenShift GitOps operator in `openshift-gitops-operator`, with `DISABLE_DEFAULT_ARGOCD_INSTANCE=true`
   (no `openshift-gitops` instance) and `ARGOCD_CLUSTER_CONFIG_NAMESPACES=argocd` (cluster-scoped `argocd` instance).
-- Namespace `argocd` on all three. On the spokes: `bgd-*` namespaces and the `argocd-manager`
+- Namespace `argocd` on all three. On the spokes: `argodemo-*` namespaces and the `argocd-manager`
   ServiceAccount (**cluster-admin**, used by the hub for push) in `kube-system`.
 
 ## Things to watch
@@ -115,7 +115,8 @@ cp env.example.sh env.sh && source ./env.sh     # HUB=sno1, SPOKE=sno2
 - [`manifests/`](manifests/): applied by hand: operator Subscription, hub and spoke `ArgoCD` CRs, `argocd-manager`,
   root app (`*.tpl` are rendered with `envsubst`).
 - [`gitops/`](gitops/): read by the root app from Git: AppProject `agent-apps` and 3 Applications per spoke.
-- [`workloads/bgd/`](workloads/bgd/): the sample app every child deploys (Deployment, Service, edge Route).
+- [`app/`](app/): **argodemo**, the web app every child deploys (Go, Hummingbird images, `quay.io/rh_ee_mmayeras/argodemo`).
+- [`workloads/argodemo/`](workloads/argodemo/): its manifests, kustomize base + `blue` / `green` overlays (page color).
 
 ## References
 

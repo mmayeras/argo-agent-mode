@@ -2,13 +2,13 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: bgd
+  name: argodemo
   labels:
-    app: bgd
+    app: argodemo
 spec:
   to:
     kind: Service
-    name: bgd
+    name: argodemo
     weight: 100
   port:
     targetPort: http

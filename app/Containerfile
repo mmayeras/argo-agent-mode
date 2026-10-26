@@ -1,0 +1,13 @@
+# Hummingbird images: minimal, hardened. Static Go binary on a distroless runtime.
+# Build: podman build --platform linux/amd64 --build-arg VERSION=1.0.0 -t quay.io/rh_ee_mmayeras/argodemo:1.0.0 app/
+FROM quay.io/hummingbird/go:1.27.3-builder AS build
+ARG VERSION=dev
+WORKDIR /src
+COPY go.mod main.go ./
+RUN CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o /out/argodemo .
+
+FROM quay.io/hummingbird/static:latest
+COPY --from=build /out/argodemo /usr/local/bin/argodemo
+# static runs as UID 65532; OpenShift replaces it with a random UID, both fine (no writes, port 8080)
+EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/argodemo"]

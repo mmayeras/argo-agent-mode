@@ -4,7 +4,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: bgd-legacy-sno3
+  name: argodemo-legacy-sno3
   namespace: argocd
   # deleting the app (or pruning it from the root app) also deletes its workloads
   finalizers:
@@ -12,13 +12,14 @@ metadata:
 spec:
   project: default
   source:
-    # bgd sample from this repo (workloads/bgd). Fork: change repoURL like GIT_REPO in env.sh.
+    # argodemo from this repo (workloads/argodemo). Overlay = page color: blue (steelblue) or green (seagreen).
+    # Fork: change repoURL like GIT_REPO in env.sh.
     repoURL: https://github.com/mmayeras/argo-agent-mode.git
     targetRevision: main
-    path: workloads/bgd
+    path: workloads/argodemo/overlays/blue
   destination:
     name: sno3-direct
-    namespace: bgd-legacy
+    namespace: argodemo-legacy
   syncPolicy:
     automated:
       prune: true

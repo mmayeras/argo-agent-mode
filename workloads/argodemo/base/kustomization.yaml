@@ -1,0 +1,17 @@
+# argodemo: Deployment + Service + edge Route. No namespace: the Application destination sets it.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml
+  - route.yaml
+# Page settings. The generated name gets a content hash: changing a value rolls the pods.
+configMapGenerator:
+  - name: argodemo
+    literals:
+      - COLOR=steelblue
+      - MESSAGE=Hello from Argo CD
+images:
+  - name: argodemo
+    newName: quay.io/rh_ee_mmayeras/argodemo
+    newTag: 1.0.0

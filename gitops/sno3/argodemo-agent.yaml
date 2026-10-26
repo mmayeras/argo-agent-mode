@@ -1,10 +1,10 @@
 # "New" app: PULL through the agent. Child of the root app (labs/05-apps.md).
 # - label argocd-agent=true         -> the principal picks it up and sends it to the agent
-# - destination sno2-agent -> secret WITH skip-reconcile -> the hub controller ignores it
+# - destination sno3-agent -> secret WITH skip-reconcile -> the hub controller ignores it
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: bgd-agent-sno2
+  name: argodemo-agent-sno3
   namespace: argocd
   # deleting the app (or pruning it from the root app) also deletes its workloads
   finalizers:
@@ -14,13 +14,14 @@ metadata:
 spec:
   project: agent-apps
   source:
-    # bgd sample from this repo (workloads/bgd). Fork: change repoURL like GIT_REPO in env.sh.
+    # argodemo from this repo (workloads/argodemo). Overlay = page color: blue (steelblue) or green (seagreen).
+    # Fork: change repoURL like GIT_REPO in env.sh.
     repoURL: https://github.com/mmayeras/argo-agent-mode.git
     targetRevision: main
-    path: workloads/bgd
+    path: workloads/argodemo/overlays/green
   destination:
-    name: sno2-agent
-    namespace: bgd-agent
+    name: sno3-agent
+    namespace: argodemo-agent
   syncPolicy:
     automated:
       prune: true
