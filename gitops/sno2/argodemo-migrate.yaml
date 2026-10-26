@@ -5,11 +5,13 @@ kind: Application
 metadata:
   name: argodemo-migrate-sno2
   namespace: argocd
+  labels:
+    argocd-agent: "true"
   # deleting the app (or pruning it from the root app) also deletes its workloads
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  project: default
+  project: agent-apps
   source:
     # argodemo from this repo (workloads/argodemo). Overlay = page color: blue (steelblue) or green (seagreen).
     # Fork: change repoURL like GIT_REPO in env.sh.
@@ -17,7 +19,7 @@ spec:
     targetRevision: main
     path: workloads/argodemo/overlays/blue
   destination:
-    name: sno2-direct
+    name: sno2-agent
     namespace: argodemo-migrate
   syncPolicy:
     automated:
