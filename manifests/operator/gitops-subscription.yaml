@@ -31,7 +31,7 @@ spec:
       # No default "openshift-gitops" instance: the lab only uses the "argocd" instance
       - name: DISABLE_DEFAULT_ARGOCD_INSTANCE
         value: "true"
-      # "argocd" instance is cluster-scoped: required by the principal (hub)
-      # and by the spoke controller, which creates the bgd-* namespaces
+      # "argocd" instance is cluster-scoped: required by the principal and the agent.
+      # Workload namespaces still need the label argocd.argoproj.io/managed-by=argocd (labs/01-operator.md)
       - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
         value: argocd

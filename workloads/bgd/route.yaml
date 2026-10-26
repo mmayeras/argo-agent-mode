@@ -1,0 +1,17 @@
+# TLS terminated at the router (edge). insecureEdgeTerminationPolicy: Allow keeps plain http working too.
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: bgd
+  labels:
+    app: bgd
+spec:
+  to:
+    kind: Service
+    name: bgd
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Allow

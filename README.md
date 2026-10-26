@@ -115,6 +115,7 @@ cp env.example.sh env.sh && source ./env.sh     # HUB=sno1, SPOKE=sno2
 - [`manifests/`](manifests/): applied by hand: operator Subscription, hub and spoke `ArgoCD` CRs, `argocd-manager`,
   root app (`*.tpl` are rendered with `envsubst`).
 - [`gitops/`](gitops/): read by the root app from Git: AppProject `agent-apps` and 3 Applications per spoke.
+- [`workloads/bgd/`](workloads/bgd/): the sample app every child deploys (Deployment, Service, edge Route).
 
 ## References
 

@@ -6,16 +6,16 @@ kind: Application
 metadata:
   name: bgd-legacy-sno2
   namespace: argocd
+  # deleting the app (or pruning it from the root app) also deletes its workloads
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    # bgd sample: runs non-root on 8080 (restricted-v2 SCC). Its base hardcodes namespace "bgd":
-    # kustomize.namespace overrides it, so each app keeps its own namespace.
-    repoURL: https://github.com/redhat-developer-demos/openshift-gitops-examples
+    # bgd sample from this repo (workloads/bgd). Fork: change repoURL like GIT_REPO in env.sh.
+    repoURL: https://github.com/mmayeras/argo-agent-mode.git
     targetRevision: main
-    path: apps/bgd/base
-    kustomize:
-      namespace: bgd-legacy
+    path: workloads/bgd
   destination:
     name: sno2-direct
     namespace: bgd-legacy

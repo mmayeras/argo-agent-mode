@@ -58,12 +58,33 @@ Same on a spoke if the agent logs `NOAUTH` (use `--context $SPOKE`, restart `arg
 
 argocd-server must use the principal redis-proxy ([module 02](02-hub.md) step 8). Agent side, the doc notes that
 without RBAC on the target namespaces the agent logs `forbidden` and the UI shows "Resource not found in cluster"
-(the spoke instance is cluster-scoped here, see [module 01](01-operator.md)).
+(next section).
 
 ```bash
 oc --context $HUB -n argocd get svc | grep redisproxy
 oc --context $HUB -n argocd get deploy argocd-server -o jsonpath='{.spec.template.spec.containers[0].command}'
 ```
+
+## Agent app `OutOfSync` / `Missing`: `... is forbidden: User "system:serviceaccount:argocd:argocd-argocd-application-controller"`
+
+The spoke controller has no write access in the target namespace. The OpenShift GitOps ClusterRole is read-only on
+workloads, even for a cluster-scoped instance ([module 01](01-operator.md)). The namespace needs the label
+`argocd.argoproj.io/managed-by: argocd` (set by `managedNamespaceMetadata` in the agent apps):
+
+```bash
+oc --context $SPOKE get ns bgd-agent --show-labels
+oc --context $SPOKE -n bgd-agent get role argocd-argocd-application-controller
+oc --context $SPOKE auth can-i create deployments -n bgd-agent \
+  --as system:serviceaccount:argocd:argocd-argocd-application-controller
+# yes
+```
+
+Missing label: `oc --context $SPOKE label ns bgd-agent argocd.argoproj.io/managed-by=argocd`. The app retries.
+
+## Workloads left behind after an app was removed
+
+An Application deleted without `resources-finalizer.argocd.argoproj.io` leaves its workloads (orphaned). The
+child apps carry it; for leftovers from an older run, delete the namespace by hand.
 
 ## Push app `Unknown` / `ComparisonError`
 

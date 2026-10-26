@@ -8,8 +8,15 @@ Two settings in `spec.config.env`:
 
 - `DISABLE_DEFAULT_ARGOCD_INSTANCE=true`: no `openshift-gitops` instance. The lab only uses the `argocd` instance it creates.
 - `ARGOCD_CLUSTER_CONFIG_NAMESPACES=argocd`: the `argocd` instance is **cluster-scoped**. The doc requires a
-  cluster-scoped instance for the principal and the agent; this variable is how OpenShift GitOps grants it. On the
-  spokes, it also lets the local controller create the `bgd-*` namespaces.
+  cluster-scoped instance for the principal and the agent; this variable is how OpenShift GitOps grants it.
+
+Cluster-scoped does **not** mean "can deploy anywhere". The operator's ClusterRole gives the application-controller
+read access everywhere, write access on namespaces and cluster configuration, but no write on workloads. It can
+deploy only in namespaces labeled `argocd.argoproj.io/managed-by: argocd`: the operator then creates an admin Role
+for it there. The agent apps set that label on their namespace ([module 05](05-apps.md)).
+
+On clusters with ACM, short resource names are ambiguous (`subscription`, `application`): the lab always uses
+the full names `subscriptions.operators.coreos.com` and `applications.argoproj.io`.
 
 ## 1. Subscribe
 

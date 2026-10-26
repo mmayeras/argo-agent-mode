@@ -16,6 +16,10 @@ gitops/
 └── sno3/                          same three
 ```
 
+Every child deploys the same sample, [`workloads/bgd/`](../workloads/bgd/) in this repo: Deployment (non-root, port
+8080, fits the `restricted-v2` SCC), Service, and an edge Route with `insecureEdgeTerminationPolicy: Allow`. The
+files have no namespace: each app's `destination.namespace` sets it.
+
 Two things decide who deploys a child app:
 
 | | Push (hub controller) | Pull (agent) |
@@ -36,6 +40,16 @@ then goes to the hub controller or to the principal on its own.
 
 Why `agent-apps`: an agent app is copied to the spoke **with its project**. The `default` project is not labeled,
 so it does not exist on the spoke.
+
+Two settings in every child app:
+
+- `finalizers: [resources-finalizer.argocd.argoproj.io]`: deleting the app (or removing its file from Git, the
+  root app prunes it) also deletes its workloads. Without it they are left orphaned. For agent apps, the agent
+  deletes the spoke copy and its workloads, then the principal removes the hub finalizer.
+- Agent apps (and the migrate app, for after module 07) set the label `argocd.argoproj.io/managed-by: argocd` on
+  their namespace with `managedNamespaceMetadata`. The spoke Argo CD can only deploy in namespaces with that label
+  ([module 01](01-operator.md)). The first sync can be `forbidden` for a few seconds, until the operator creates
+  the Role: `retry` covers it.
 
 ## 1. The root app
 
@@ -104,12 +118,12 @@ done
 # sno2   bgd-legacy   1/1 ready   ... (6 lines)
 ```
 
-Each app has its own Route (the bgd page is a blue square):
+Each app has its own Route (edge TLS, plain http allowed too; the bgd page is a blue square):
 
 ```bash
 for s in sno2 sno3; do
   for n in bgd-legacy bgd-agent bgd-migrate; do
-    oc --context $s -n $n get route bgd -o jsonpath='http://{.spec.host}{"\n"}'
+    oc --context $s -n $n get route bgd -o jsonpath='https://{.spec.host}{"\n"}'
   done
 done
 ```
@@ -135,3 +149,4 @@ tree is served by the principal redis-proxy and resource proxy, from the agent.
 - [ ] Each spoke shows only its `bgd-agent-<spoke>`, with a `source-uid`
 - [ ] 3 `bgd` deployments ready on each spoke
 - [ ] No `bgd-agent-` lines in the hub controller logs
+- [ ] `bgd-agent` namespace on each spoke labeled `argocd.argoproj.io/managed-by=argocd`

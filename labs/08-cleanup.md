@@ -8,8 +8,10 @@ source ./env.sh
 
 ## 1. Hub
 
-The root app first, or it recreates its children. Then the children (they have no finalizer: the workloads stay,
-they go with their namespaces below).
+The root app first, or it recreates its children. Then the children: they carry
+`resources-finalizer.argocd.argoproj.io`, so `oc delete` waits until their workloads are gone. Push apps are
+cleaned by the hub controller; agent apps by the spoke controller, then the principal removes the hub finalizer.
+The AppProject last: a child app cannot finish its cleanup without its project.
 
 ```bash
 oc --context $HUB -n argocd delete applications.argoproj.io root
@@ -35,8 +37,8 @@ done
 
 ```bash
 for c in sno1 sno2 sno3; do
-  CSV=$(oc --context $c -n openshift-gitops-operator get subscription openshift-gitops-operator -o jsonpath='{.status.installedCSV}')
-  oc --context $c -n openshift-gitops-operator delete subscription openshift-gitops-operator
+  CSV=$(oc --context $c -n openshift-gitops-operator get subscriptions.operators.coreos.com openshift-gitops-operator -o jsonpath='{.status.installedCSV}')
+  oc --context $c -n openshift-gitops-operator delete subscriptions.operators.coreos.com openshift-gitops-operator
   oc --context $c -n openshift-gitops-operator delete csv $CSV
   oc --context $c delete namespace openshift-gitops-operator
 done
