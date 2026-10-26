@@ -1,5 +1,5 @@
 # OpenShift GitOps operator, installed the same way on the hub and on every spoke.
-# __CHANNEL__ is replaced by scripts/01-operator.sh (GITOPS_CHANNEL, default "latest").
+# Channel "latest" = newest GA. The lab is written for 1.22 (labs/01-operator.md).
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -21,7 +21,7 @@ metadata:
   name: openshift-gitops-operator
   namespace: openshift-gitops-operator
 spec:
-  channel: __CHANNEL__
+  channel: latest
   installPlanApproval: Automatic
   name: openshift-gitops-operator
   source: redhat-operators

@@ -1,0 +1,27 @@
+# AppProject for agent-managed apps.
+# The label makes it visible to the principal, which copies it to each spoke.
+# One destination per agent (= agent name = cluster name on the hub).
+# Sync wave -1: created by the root app before the agent apps that use it.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: agent-apps
+  namespace: argocd
+  labels:
+    argocd-agent: "true"
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  description: Apps deployed through argocd-agent (pull)
+  sourceRepos:
+    - "*"
+  sourceNamespaces:
+    - "*"
+  destinations:
+    - name: sno2-agent
+      namespace: "*"
+    - name: sno3-agent
+      namespace: "*"
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"

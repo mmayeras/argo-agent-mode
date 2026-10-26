@@ -1,10 +1,10 @@
-# "New" app: PULL through the agent. Rendered once per spoke (__SPOKE__) by scripts/05-apps.sh.
+# "New" app: PULL through the agent. Child of the root app (labs/05-apps.md).
 # - label argocd-agent=true         -> the principal picks it up and sends it to the agent
-# - destination __SPOKE__-agent     -> secret WITH skip-reconcile -> the hub controller ignores it
+# - destination sno2-agent -> secret WITH skip-reconcile -> the hub controller ignores it
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: guestbook-agent-__SPOKE__
+  name: guestbook-agent-sno2
   namespace: argocd
   labels:
     argocd-agent: "true"
@@ -15,7 +15,7 @@ spec:
     targetRevision: HEAD
     path: guestbook
   destination:
-    name: __SPOKE__-agent
+    name: sno2-agent
     namespace: guestbook-agent
   syncPolicy:
     automated:

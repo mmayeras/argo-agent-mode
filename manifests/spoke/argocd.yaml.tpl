@@ -1,6 +1,6 @@
 # Spoke (sno2, sno3): "slim" Argo CD (application-controller + repo-server + redis, no UI)
 # + argocd-agent in managed mode.
-# __PRINCIPAL_HOST__ is replaced by scripts/03-spokes.sh with the hub principal Route host.
+# ${PRINCIPAL_HOST} comes from env.sh (labs/02-hub.md), rendered with envsubst.
 apiVersion: argoproj.io/v1beta1
 kind: ArgoCD
 metadata:
@@ -17,22 +17,22 @@ spec:
       allowedNamespaces:
         - "*"
       client:
-        principalServerAddress: __PRINCIPAL_HOST__
+        principalServerAddress: ${PRINCIPAL_HOST}
         principalServerPort: "443"
         mode: managed
       # client cert + CA written by "argocd-agentctl pki issue agent"
       tls:
         secretName: argocd-agent-client-tls
         rootCASecretName: argocd-agent-ca
+        insecure: false
       redis:
         serverAddress: argocd-redis:6379
       destinationBasedMapping:
         enabled: true
         createNamespace: true
+      # ISOLATION 2: same label as the principal
+      labelSelector: "argocd-agent=true"
       env:
-        # ISOLATION 2: same label as the principal
-        - name: ARGOCD_AGENT_LABEL_SELECTOR
-          value: "argocd-agent=true"
         # ISOLATION 3 (safety net): ignore apps not created by the agent
         - name: ARGOCD_AGENT_IGNORE_UNMANAGED_APPS
           value: "true"

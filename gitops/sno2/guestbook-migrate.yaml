@@ -1,0 +1,22 @@
+# App that starts as PUSH and will be migrated to the agent (labs/07-demo-migrate.md).
+# Child of the root app (labs/05-apps.md).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook-migrate-sno2
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps
+    targetRevision: HEAD
+    path: guestbook
+  destination:
+    name: sno2-direct
+    namespace: guestbook-migrate
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

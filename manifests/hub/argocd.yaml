@@ -27,13 +27,10 @@ spec:
         # passthrough Route argocd-agent-principal-argocd.<apps domain>:443, reached by the agents
         route:
           enabled: true
-      # certificates and JWT key are issued by argocd-agentctl (scripts/02-hub.sh)
+      # certificates and JWT key are issued by argocd-agentctl (labs/02-hub.md)
       tls:
         insecureGenerate: false
       jwt:
         insecureGenerate: false
-      env:
-        # ISOLATION 2: the principal ONLY sees labeled resources
-        # (env var instead of spec.labelSelector, which needs operator >= 0.20 / GitOps 1.22)
-        - name: ARGOCD_PRINCIPAL_LABEL_SELECTOR
-          value: "argocd-agent=true"
+      # ISOLATION 2: the principal ONLY sees labeled resources
+      labelSelector: "argocd-agent=true"

@@ -1,0 +1,25 @@
+# "New" app: PULL through the agent. Child of the root app (labs/05-apps.md).
+# - label argocd-agent=true         -> the principal picks it up and sends it to the agent
+# - destination sno3-agent -> secret WITH skip-reconcile -> the hub controller ignores it
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook-agent-sno3
+  namespace: argocd
+  labels:
+    argocd-agent: "true"
+spec:
+  project: agent-apps
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps
+    targetRevision: HEAD
+    path: guestbook
+  destination:
+    name: sno3-agent
+    namespace: guestbook-agent
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
