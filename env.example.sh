@@ -12,3 +12,7 @@ export GIT_BRANCH=main
 
 # Principal Route host, filled in module 02 (step 3)
 export PRINCIPAL_HOST=""
+
+# Bonus module 10 (repository credential templates): your private copy of the argodemo manifests
+export GH_USER=mmayeras
+export PRIVATE_REPO=https://github.com/${GH_USER}/argodemo-private.git

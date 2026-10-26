@@ -77,6 +77,7 @@ Every step is a plain `oc` or `argocd-agentctl` command, with the expected outpu
 | Remove `skip-reconcile`, watch the conflict | [06 - Demo: skip-reconcile](labs/06-demo-skip-reconcile.md) | sno1 |
 | Move a push app to the agent with a Git change | [07 - Demo: migrate](labs/07-demo-migrate.md) | Git, sno1, sno2 |
 | Remove the lab | [08 - Clean up](labs/08-cleanup.md) | all |
+| **Bonus:** one credential template for many repos and projects | [10 - Repo-creds](labs/10-bonus-repo-creds.md) | sno1, GitHub |
 | When something is stuck | [09 - Troubleshooting](labs/09-troubleshooting.md) | |
 
 ```bash
