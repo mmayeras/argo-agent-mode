@@ -32,6 +32,6 @@ spec:
       - name: DISABLE_DEFAULT_ARGOCD_INSTANCE
         value: "true"
       # "argocd" instance is cluster-scoped: required by the principal (hub)
-      # and by the spoke controller, which creates the guestbook-* namespaces
+      # and by the spoke controller, which creates the bgd-* namespaces
       - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
         value: argocd

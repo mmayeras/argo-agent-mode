@@ -9,7 +9,7 @@ Two settings in `spec.config.env`:
 - `DISABLE_DEFAULT_ARGOCD_INSTANCE=true`: no `openshift-gitops` instance. The lab only uses the `argocd` instance it creates.
 - `ARGOCD_CLUSTER_CONFIG_NAMESPACES=argocd`: the `argocd` instance is **cluster-scoped**. The doc requires a
   cluster-scoped instance for the principal and the agent; this variable is how OpenShift GitOps grants it. On the
-  spokes, it also lets the local controller create the `guestbook-*` namespaces.
+  spokes, it also lets the local controller create the `bgd-*` namespaces.
 
 ## 1. Subscribe
 

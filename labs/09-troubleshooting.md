@@ -49,7 +49,7 @@ Same on a spoke if the agent logs `NOAUTH` (use `--context $SPOKE`, restart `arg
 
 ## Agent app stuck on the hub, nothing on the spoke
 
-- Label missing: `oc --context $HUB -n argocd get application <app> --show-labels`
+- Label missing: `oc --context $HUB -n argocd get applications.argoproj.io <app> --show-labels`
 - Project not labeled or not on the spoke: `oc --context $SPOKE -n argocd get appproject`
   (`app is not allowed in project "default"` in the agent log).
 - `destination.name` is not an agent name (`sno2-agent`).
@@ -71,7 +71,7 @@ oc --context $HUB -n argocd get deploy argocd-server -o jsonpath='{.spec.templat
 - Token secret deleted in `kube-system`, or certificate error: recreate `cluster-<spoke>-direct`
   ([module 04](04-spoke-push.md)), with `"insecure": true` if the API has a custom certificate.
 
-## Hub controller logs show `guestbook-agent-*`
+## Hub controller logs show `bgd-agent-*`
 
 `skip-reconcile` missing on `cluster-<spoke>-agent`, or Argo CD < 3.4:
 

@@ -24,21 +24,21 @@ oc --context $HUB -n argocd get pod argocd-application-controller-0 -w
 
 ## 2. Watch
 
-Wait one minute. The hub controller now processes `guestbook-agent-$SPOKE`, reaching the spoke through the
+Wait one minute. The hub controller now processes `bgd-agent-$SPOKE`, reaching the spoke through the
 resource proxy:
 
 ```bash
 oc --context $HUB -n argocd logs statefulset/argocd-application-controller --since=2m \
-  | grep guestbook-agent-$SPOKE | tail -n 20
-# reconciliation lines for guestbook-agent-sno2: the hub is now a second controller
+  | grep bgd-agent-$SPOKE | tail -n 20
+# reconciliation lines for bgd-agent-sno2: the hub is now a second controller
 ```
 
 Two writers on the same Application status (hub controller and principal):
 
 ```bash
-oc --context $HUB -n argocd get application guestbook-agent-$SPOKE \
+oc --context $HUB -n argocd get applications.argoproj.io bgd-agent-$SPOKE \
   -o jsonpath='{.status.sync.status}{" / "}{.status.health.status}{"\n"}{range .status.conditions[*]}{.type}{": "}{.message}{"\n"}{end}'
-oc --context $HUB -n argocd get application guestbook-agent-$SPOKE -w
+oc --context $HUB -n argocd get applications.argoproj.io bgd-agent-$SPOKE -w
 # sync/health flapping, error conditions   (Ctrl+C)
 ```
 
@@ -57,5 +57,5 @@ oc --context $HUB -n argocd delete pod argocd-application-controller-0
 
 ## Checkpoint
 
-- [ ] Saw `guestbook-agent-sno2` in the hub controller logs while the annotation was gone
-- [ ] Annotation restored, no more `guestbook-agent-` lines after the restart
+- [ ] Saw `bgd-agent-sno2` in the hub controller logs while the annotation was gone
+- [ ] Annotation restored, no more `bgd-agent-` lines after the restart

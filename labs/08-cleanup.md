@@ -12,8 +12,8 @@ The root app first, or it recreates its children. Then the children (they have n
 they go with their namespaces below).
 
 ```bash
-oc --context $HUB -n argocd delete application root
-oc --context $HUB -n argocd delete applications --all
+oc --context $HUB -n argocd delete applications.argoproj.io root
+oc --context $HUB -n argocd delete applications.argoproj.io --all
 oc --context $HUB -n argocd delete appproject agent-apps
 oc --context $HUB -n argocd delete argocd argocd
 oc --context $HUB delete namespace argocd
@@ -25,7 +25,7 @@ oc --context $HUB delete namespace argocd
 ```bash
 for s in sno2 sno3; do
   oc --context $s -n argocd delete argocd argocd
-  oc --context $s delete namespace guestbook-legacy guestbook-agent guestbook-migrate --ignore-not-found
+  oc --context $s delete namespace bgd-legacy bgd-agent bgd-migrate --ignore-not-found
   oc --context $s delete -f manifests/spoke/argocd-manager.yaml
   oc --context $s delete namespace argocd
 done
@@ -51,5 +51,5 @@ for c in sno1 sno2 sno3; do oc --context $c get crd -o name | grep argoproj.io; 
 ## Checkpoint
 
 - [ ] No `argocd` namespace on sno1, sno2, sno3
-- [ ] No `guestbook-*` namespaces on the spokes
+- [ ] No `bgd-*` namespaces on the spokes
 - [ ] No `argocd-manager` in `kube-system` on the spokes

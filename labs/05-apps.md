@@ -10,9 +10,9 @@ push) and creates everything under [`gitops/`](../gitops/) from Git:
 gitops/
 ├── appproject-agent-apps.yaml     AppProject for agent apps (sync wave -1)
 ├── sno2/
-│   ├── guestbook-legacy.yaml      push
-│   ├── guestbook-agent.yaml       pull
-│   └── guestbook-migrate.yaml     push, migrated in module 07
+│   ├── bgd-legacy.yaml      push
+│   ├── bgd-agent.yaml       pull
+│   └── bgd-migrate.yaml     push, migrated in module 07
 └── sno3/                          same three
 ```
 
@@ -27,9 +27,9 @@ Two things decide who deploys a child app:
 | Application | Label | Destination | Managed by |
 |---|---|---|---|
 | `root` | - | in-cluster (hub) | hub (push) |
-| `guestbook-legacy-<spoke>` | - | `<spoke>-direct` | hub (push) |
-| `guestbook-agent-<spoke>` | `argocd-agent=true` | `<spoke>-agent` | agent (pull) |
-| `guestbook-migrate-<spoke>` | - (until module 07) | `<spoke>-direct` | hub (push), then migrated |
+| `bgd-legacy-<spoke>` | - | `<spoke>-direct` | hub (push) |
+| `bgd-agent-<spoke>` | `argocd-agent=true` | `<spoke>-agent` | agent (pull) |
+| `bgd-migrate-<spoke>` | - (until module 07) | `<spoke>-direct` | hub (push), then migrated |
 
 The root app has no label: the principal ignores it. It only writes Application objects on the hub; each child
 then goes to the hub controller or to the principal on its own.
@@ -46,7 +46,7 @@ envsubst < manifests/hub/root-app.yaml.tpl | oc --context $HUB apply -f -
 ```
 
 ```bash
-oc --context $HUB -n argocd get application root -w
+oc --context $HUB -n argocd get applications.argoproj.io root -w
 # root   Synced   Healthy   (Ctrl+C)
 ```
 
@@ -54,8 +54,8 @@ It created the AppProject and the 6 children:
 
 ```bash
 oc --context $HUB -n argocd get appproject agent-apps
-oc --context $HUB -n argocd get applications
-# root + 6 guestbook-* apps
+oc --context $HUB -n argocd get applications.argoproj.io
+# root + 6 bgd-* apps
 ```
 
 The principal sends the labeled AppProject to every agent:
@@ -72,11 +72,11 @@ Give the children 1 to 2 minutes.
 On the hub, all 7:
 
 ```bash
-oc --context $HUB -n argocd get applications \
+oc --context $HUB -n argocd get applications.argoproj.io \
   -o custom-columns='NAME:.metadata.name,DEST:.spec.destination.name,AGENT-LABEL:.metadata.labels.argocd-agent,SYNC:.status.sync.status,HEALTH:.status.health.status'
-# guestbook-agent-sno2     sno2-agent    true     Synced   Healthy
-# guestbook-legacy-sno2    sno2-direct   <none>   Synced   Healthy
-# guestbook-migrate-sno2   sno2-direct   <none>   Synced   Healthy
+# bgd-agent-sno2     sno2-agent    true     Synced   Healthy
+# bgd-legacy-sno2    sno2-direct   <none>   Synced   Healthy
+# bgd-migrate-sno2   sno2-direct   <none>   Synced   Healthy
 # ... same for sno3
 # root                     <none>        <none>   Synced   Healthy
 ```
@@ -85,43 +85,53 @@ On each spoke, **only** its agent app, with the `source-uid` annotation that lin
 
 ```bash
 for s in sno2 sno3; do
-  oc --context $s get applications -A \
+  oc --context $s get applications.argoproj.io -A \
     -o custom-columns='NS:.metadata.namespace,NAME:.metadata.name,SOURCE-UID:.metadata.annotations.argocd\.argoproj\.io/source-uid,SYNC:.status.sync.status'
 done
-# argocd   guestbook-agent-sno2   <uid>   Synced
-# argocd   guestbook-agent-sno3   <uid>   Synced
+# argocd   bgd-agent-sno2   <uid>   Synced
+# argocd   bgd-agent-sno3   <uid>   Synced
 ```
 
 The workloads, all three namespaces on each spoke:
 
 ```bash
 for s in sno2 sno3; do
-  for n in guestbook-legacy guestbook-agent guestbook-migrate; do
+  for n in bgd-legacy bgd-agent bgd-migrate; do
     printf '%-6s %-18s ' $s $n
-    oc --context $s -n $n get deploy guestbook-ui -o jsonpath='{.status.readyReplicas}/{.spec.replicas} ready{"\n"}'
+    oc --context $s -n $n get deploy bgd -o jsonpath='{.status.readyReplicas}/{.spec.replicas} ready{"\n"}'
   done
 done
-# sno2   guestbook-legacy   1/1 ready   ... (6 lines)
+# sno2   bgd-legacy   1/1 ready   ... (6 lines)
+```
+
+Each app has its own Route (the bgd page is a blue square):
+
+```bash
+for s in sno2 sno3; do
+  for n in bgd-legacy bgd-agent bgd-migrate; do
+    oc --context $s -n $n get route bgd -o jsonpath='http://{.spec.host}{"\n"}'
+  done
+done
 ```
 
 The hub controller must not work on the agent apps (safeguard 1):
 
 ```bash
 oc --context $HUB -n argocd logs statefulset/argocd-application-controller --since=5m \
-  | grep -c 'guestbook-agent-'
+  | grep -c 'bgd-agent-'
 # 0
 oc --context $HUB -n argocd logs statefulset/argocd-application-controller --since=5m \
-  | grep -c 'guestbook-legacy-'
+  | grep -c 'bgd-legacy-'
 # > 0 (push apps are reconciled by the hub)
 ```
 
-In the UI, open `root`: its tree shows the 6 child Applications. Open `guestbook-agent-sno2`: its resource
+In the UI, open `root`: its tree shows the 6 child Applications. Open `bgd-agent-sno2`: its resource
 tree is served by the principal redis-proxy and resource proxy, from the agent.
 
 ## Checkpoint
 
 - [ ] `root` `Synced` / `Healthy`, 6 children created from Git
 - [ ] 6 children `Synced` / `Healthy` on the hub
-- [ ] Each spoke shows only its `guestbook-agent-<spoke>`, with a `source-uid`
-- [ ] 3 `guestbook-ui` deployments ready on each spoke
-- [ ] No `guestbook-agent-` lines in the hub controller logs
+- [ ] Each spoke shows only its `bgd-agent-<spoke>`, with a `source-uid`
+- [ ] 3 `bgd` deployments ready on each spoke
+- [ ] No `bgd-agent-` lines in the hub controller logs
